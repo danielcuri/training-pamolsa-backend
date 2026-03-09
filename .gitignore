@@ -1,0 +1,58 @@
+# dependencies
+/node_modules
+.pnpm-store
+
+# build
+/dist
+/build
+
+# logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# dotenv
+.env
+.env.*
+!.env.example
+
+# coverage
+/coverage
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# temp
+tmp
+temp
+.cache
+
+# NestJS
+/.nestjs-cli.json
+
+# uploads / storage
+/uploads
+/storage
+/public/uploads
+
+# Docker
+docker-data
+*.pid
+
+# testing
+/test-results
+
+# prisma
+/prisma/migrations/dev.db
+
+# misc
+*.local
