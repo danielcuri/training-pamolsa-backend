@@ -1,0 +1,325 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum OperationPriority {
+  CRITICAL
+  SEMI_CRITICAL
+  NON_CRITICAL
+}
+
+enum TrainingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum TrainingResult {
+  PASSED
+  FAILED
+}
+
+enum PeriodStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Project {
+  id     Int          @id @default(autoincrement())
+  name   String
+  status RecordStatus @default(ACTIVE)
+
+  areas Area[]
+  users User[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  trainingTemplates TrainingTemplate[]
+
+  @@map("projects")
+}
+
+model Area {
+  id     Int          @id @default(autoincrement())
+  name   String
+  status RecordStatus @default(ACTIVE)
+
+  projectId Int     @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id])
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  operations AreaOperation[]
+  users      User[]
+  templates  TrainingTemplate[]
+
+  @@map("areas")
+}
+
+model AreaOperation {
+  id            Int               @id @default(autoincrement())
+  name          String
+  description   String?
+  priority      OperationPriority
+  weightPercent Float?            @map("weight_percent")
+
+  status RecordStatus @default(ACTIVE)
+
+  areaId Int  @map("area_id")
+  area   Area @relation(fields: [areaId], references: [id])
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  templateOps TemplateOperation[]
+
+  @@map("area_operations")
+}
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  name     String
+  email    String? @unique
+  dni      String? @unique
+  password String?
+
+  educationLevel String?   @map("education_level")
+  hireDate       DateTime? @map("hire_date")
+
+  status RecordStatus @default(ACTIVE)
+
+  projectId Int? @map("project_id")
+  areaId    Int? @map("area_id")
+  roleId    Int? @map("role_id")
+
+  project Project? @relation(fields: [projectId], references: [id])
+  area    Area?    @relation(fields: [areaId], references: [id])
+  role    Role?    @relation(fields: [roleId], references: [id])
+
+  trainings Training[]
+
+  evaluationsDone TrainingEvaluation[] @relation("Evaluator")
+  evaluatedLogs   TrainingLog[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("users")
+}
+
+model TrainingTemplate {
+  id Int @id @default(autoincrement())
+
+  name    String
+  version Int    @default(1)
+
+  periodDurationDays Int? @map("period_duration_days")
+  totalPeriods       Int? @map("total_periods")
+
+  minimumPassingScore Float? @map("minimum_passing_score")
+
+  certificateTemplatePdf String? @map("certificate_template_pdf")
+
+  status RecordStatus @default(ACTIVE)
+
+  areaId Int  @map("area_id")
+  area   Area @relation(fields: [areaId], references: [id])
+
+  projectId Int     @map("project_id")
+  project   Project @relation(fields: [projectId], references: [id])
+
+  operations TemplateOperation[]
+  trainings  Training[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([projectId])
+  @@index([areaId])
+  @@map("training_templates")
+}
+
+model TemplateOperation {
+  id Int @id @default(autoincrement())
+
+  name        String
+  description String?
+
+  priority      OperationPriority
+  weightPercent Float?            @map("weight_percent")
+
+  order Int?
+
+  minimumScore Float? @map("minimum_score")
+
+  templateId Int              @map("template_id")
+  template   TrainingTemplate @relation(fields: [templateId], references: [id])
+
+  areaOperationId Int?           @map("area_operation_id")
+  areaOperation   AreaOperation? @relation(fields: [areaOperationId], references: [id])
+
+  logs        TrainingLog[]
+  evaluations EvaluationDetail[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("template_operations")
+}
+
+model Training {
+  id Int @id @default(autoincrement())
+
+  userId     Int @map("user_id")
+  templateId Int @map("template_id")
+
+  startDate DateTime? @map("start_date")
+
+  status TrainingStatus  @default(NOT_STARTED)
+  result TrainingResult?
+
+  user     User             @relation(fields: [userId], references: [id])
+  template TrainingTemplate @relation(fields: [templateId], references: [id])
+
+  periods     TrainingPeriod[]
+  evaluations TrainingEvaluation[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("trainings")
+}
+
+model TrainingPeriod {
+  id Int @id @default(autoincrement())
+
+  trainingId   Int @map("training_id")
+  periodNumber Int @map("period_number")
+
+  startDate DateTime? @map("start_date")
+  endDate   DateTime? @map("end_date")
+
+  status PeriodStatus
+
+  training Training @relation(fields: [trainingId], references: [id])
+
+  logs      TrainingLog[]
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+  deletedAt DateTime?     @map("deleted_at")
+
+  @@index([trainingId])
+  @@map("training_periods")
+}
+
+model TrainingLog {
+  id Int @id @default(autoincrement())
+
+  trainingPeriodId    Int @map("training_period_id")
+  templateOperationId Int @map("template_operation_id")
+
+  score Float?
+
+  checklist String?
+
+  notes String?
+
+  evaluatorId Int? @map("evaluator_id")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  period    TrainingPeriod    @relation(fields: [trainingPeriodId], references: [id])
+  operation TemplateOperation @relation(fields: [templateOperationId], references: [id])
+  evaluator User?             @relation(fields: [evaluatorId], references: [id])
+
+  @@index([trainingPeriodId])
+  @@map("training_logs")
+}
+
+model TrainingEvaluation {
+  id Int @id @default(autoincrement())
+
+  trainingId     Int       @map("training_id")
+  evaluationDate DateTime? @map("evaluation_date")
+
+  finalScore Float? @map("final_score")
+
+  result TrainingResult?
+
+  notes String?
+
+  evaluatorId Int? @map("evaluator_id")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  training  Training @relation(fields: [trainingId], references: [id])
+  evaluator User?    @relation("Evaluator", fields: [evaluatorId], references: [id])
+
+  details EvaluationDetail[]
+
+  @@map("training_evaluations")
+}
+
+model EvaluationDetail {
+  id Int @id @default(autoincrement())
+
+  evaluationId        Int @map("evaluation_id")
+  templateOperationId Int @map("template_operation_id")
+
+  score Float?
+
+  evaluatorId Int? @map("evaluator_id")
+
+  evaluation TrainingEvaluation @relation(fields: [evaluationId], references: [id])
+  operation  TemplateOperation  @relation(fields: [templateOperationId], references: [id])
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@map("evaluation_details")
+}
