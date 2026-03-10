@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
   output   = "../generated/prisma"
 }
 
@@ -41,8 +41,15 @@ enum PeriodStatus {
   COMPLETED
 }
 
+enum Role {
+  ADMIN
+  COLLABORATOR
+  SUPERVISOR
+  SUPERADMIN
+}
+
 model Project {
-  id     Int          @id @default(autoincrement())
+  id     String       @id @default(uuid())
   name   String
   status RecordStatus @default(ACTIVE)
 
@@ -59,11 +66,11 @@ model Project {
 }
 
 model Area {
-  id     Int          @id @default(autoincrement())
+  id     String       @id @default(uuid())
   name   String
   status RecordStatus @default(ACTIVE)
 
-  projectId Int     @map("project_id")
+  projectId String  @map("project_id")
   project   Project @relation(fields: [projectId], references: [id])
 
   createdAt DateTime  @default(now()) @map("created_at")
@@ -78,7 +85,7 @@ model Area {
 }
 
 model AreaOperation {
-  id            Int               @id @default(autoincrement())
+  id            String            @id @default(uuid())
   name          String
   description   String?
   priority      OperationPriority
@@ -86,8 +93,8 @@ model AreaOperation {
 
   status RecordStatus @default(ACTIVE)
 
-  areaId Int  @map("area_id")
-  area   Area @relation(fields: [areaId], references: [id])
+  areaId String @map("area_id")
+  area   Area   @relation(fields: [areaId], references: [id])
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -98,21 +105,8 @@ model AreaOperation {
   @@map("area_operations")
 }
 
-model Role {
-  id   Int    @id @default(autoincrement())
-  name String
-
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
-
-  users User[]
-
-  @@map("roles")
-}
-
 model User {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
 
   name     String
   email    String? @unique
@@ -121,16 +115,15 @@ model User {
 
   educationLevel String?   @map("education_level")
   hireDate       DateTime? @map("hire_date")
+  role           Role      @default(SUPERADMIN)
 
   status RecordStatus @default(ACTIVE)
 
-  projectId Int? @map("project_id")
-  areaId    Int? @map("area_id")
-  roleId    Int? @map("role_id")
+  projectId String? @map("project_id")
+  areaId    String? @map("area_id")
 
   project Project? @relation(fields: [projectId], references: [id])
   area    Area?    @relation(fields: [areaId], references: [id])
-  role    Role?    @relation(fields: [roleId], references: [id])
 
   trainings Training[]
 
@@ -145,7 +138,7 @@ model User {
 }
 
 model TrainingTemplate {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
 
   name    String
   version Int    @default(1)
@@ -159,10 +152,10 @@ model TrainingTemplate {
 
   status RecordStatus @default(ACTIVE)
 
-  areaId Int  @map("area_id")
-  area   Area @relation(fields: [areaId], references: [id])
+  areaId String @map("area_id")
+  area   Area   @relation(fields: [areaId], references: [id])
 
-  projectId Int     @map("project_id")
+  projectId String  @map("project_id")
   project   Project @relation(fields: [projectId], references: [id])
 
   operations TemplateOperation[]
@@ -178,7 +171,7 @@ model TrainingTemplate {
 }
 
 model TemplateOperation {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
 
   name        String
   description String?
@@ -190,10 +183,10 @@ model TemplateOperation {
 
   minimumScore Float? @map("minimum_score")
 
-  templateId Int              @map("template_id")
+  templateId String           @map("template_id")
   template   TrainingTemplate @relation(fields: [templateId], references: [id])
 
-  areaOperationId Int?           @map("area_operation_id")
+  areaOperationId String?        @map("area_operation_id")
   areaOperation   AreaOperation? @relation(fields: [areaOperationId], references: [id])
 
   logs        TrainingLog[]
@@ -207,10 +200,10 @@ model TemplateOperation {
 }
 
 model Training {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
 
-  userId     Int @map("user_id")
-  templateId Int @map("template_id")
+  userId     String @map("user_id")
+  templateId String @map("template_id")
 
   startDate DateTime? @map("start_date")
 
@@ -231,10 +224,10 @@ model Training {
 }
 
 model TrainingPeriod {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
 
-  trainingId   Int @map("training_id")
-  periodNumber Int @map("period_number")
+  trainingId   String @map("training_id")
+  periodNumber Int    @map("period_number")
 
   startDate DateTime? @map("start_date")
   endDate   DateTime? @map("end_date")
@@ -253,10 +246,10 @@ model TrainingPeriod {
 }
 
 model TrainingLog {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
 
-  trainingPeriodId    Int @map("training_period_id")
-  templateOperationId Int @map("template_operation_id")
+  trainingPeriodId    String @map("training_period_id")
+  templateOperationId String @map("template_operation_id")
 
   score Float?
 
@@ -264,7 +257,7 @@ model TrainingLog {
 
   notes String?
 
-  evaluatorId Int? @map("evaluator_id")
+  evaluatorId String? @map("evaluator_id")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -279,9 +272,9 @@ model TrainingLog {
 }
 
 model TrainingEvaluation {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
 
-  trainingId     Int       @map("training_id")
+  trainingId     String    @map("training_id")
   evaluationDate DateTime? @map("evaluation_date")
 
   finalScore Float? @map("final_score")
@@ -290,7 +283,7 @@ model TrainingEvaluation {
 
   notes String?
 
-  evaluatorId Int? @map("evaluator_id")
+  evaluatorId String? @map("evaluator_id")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -305,10 +298,10 @@ model TrainingEvaluation {
 }
 
 model EvaluationDetail {
-  id Int @id @default(autoincrement())
+  id String @id @default(uuid())
 
-  evaluationId        Int @map("evaluation_id")
-  templateOperationId Int @map("template_operation_id")
+  evaluationId        String @map("evaluation_id")
+  templateOperationId String @map("template_operation_id")
 
   score Float?
 
