@@ -14,7 +14,7 @@ import {
   buildWhere,
 } from 'src/common/helpers';
 import { ProjectEntity } from './entities/project.entity';
-import type { Prisma } from '../../generated/prisma/client';
+
 @Injectable()
 export class ProjectService {
   constructor(private readonly prisma: PrismaService) {}
