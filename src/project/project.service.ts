@@ -6,10 +6,19 @@ import {
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { Role } from 'generated/prisma';
+
+import { ListProjectsDto } from './dto/list-projects.dto';
+import {
+  buildPrismaQueryParams,
+  buildPaginatedResponse,
+  buildWhere,
+} from 'src/common/helpers';
+import { ProjectEntity } from './entities/project.entity';
+import type { Prisma } from '../../generated/prisma/client';
 @Injectable()
 export class ProjectService {
   constructor(private readonly prisma: PrismaService) {}
+
   async create(createProjectDto: CreateProjectDto) {
     return await this.prisma.project.create({
       data: {
@@ -18,15 +27,19 @@ export class ProjectService {
     });
   }
 
-  async findAll() {
-    return await this.prisma.project.findMany({
-      where: { deletedAt: null },
-      select: {
-        id: true,
-        name: true,
-        status: true,
-      },
-    });
+  async findAll(dto: ListProjectsDto) {
+    const where = buildWhere(dto, ProjectEntity.SEARCH_FIELDS as string[]);
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.project.findMany({
+        where,
+        select: ProjectEntity.DEFAULT_SELECT,
+        ...buildPrismaQueryParams(dto, dto.allowedSortFields),
+      }),
+      this.prisma.project.count({ where }),
+    ]);
+
+    return buildPaginatedResponse(data, total, dto);
   }
 
   async findOne(id: string) {
