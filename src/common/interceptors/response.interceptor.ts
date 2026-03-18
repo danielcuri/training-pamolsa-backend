@@ -21,12 +21,34 @@ export class ResponseInterceptor implements NestInterceptor {
       this.defaultMessage(context);
 
     return next.handle().pipe(
-      map((data) => ({
-        statusCode,
-        status: statusCode < 400,
-        message,
-        ...(data !== undefined && data !== null ? { data } : {}),
-      })),
+      map((payload) => {
+        // Si el service retorna { data, meta } (respuesta paginada),
+        // elevamos meta al nivel raíz para evitar data.data anidado
+        const isPaginated =
+          payload !== null &&
+          typeof payload === 'object' &&
+          Array.isArray(payload.data) &&
+          typeof payload.meta === 'object';
+
+        if (isPaginated) {
+          return {
+            statusCode,
+            status: statusCode < 400,
+            message,
+            data: payload.data,
+            meta: payload.meta,
+          };
+        }
+
+        return {
+          statusCode,
+          status: statusCode < 400,
+          message,
+          ...(payload !== undefined && payload !== null
+            ? { data: payload }
+            : {}),
+        };
+      }),
     );
   }
 

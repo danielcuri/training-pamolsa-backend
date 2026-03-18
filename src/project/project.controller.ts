@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -13,6 +14,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../../generated/prisma';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
+import { ListProjectsDto } from './dto/list-projects.dto';
 
 @Controller('project')
 export class ProjectController {
@@ -28,8 +30,8 @@ export class ProjectController {
   @Get()
   @Roles(Role.ADMIN, Role.SUPERADMIN)
   @ResponseMessage('Proyectos obtenidos correctamente')
-  findAll() {
-    return this.projectService.findAll();
+  findAll(@Query() params: ListProjectsDto) {
+    return this.projectService.findAll(params);
   }
 
   @Get(':id')
@@ -53,4 +55,3 @@ export class ProjectController {
     return this.projectService.remove(id);
   }
 }
-
