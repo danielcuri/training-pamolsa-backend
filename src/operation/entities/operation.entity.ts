@@ -46,6 +46,7 @@ export class OperationEntity {
         id: true,
         name: true,
         status: true,
+        projectId: true,
       },
     },
   } as const;
