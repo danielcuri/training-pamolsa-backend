@@ -1,15 +1,14 @@
-export class UserEntity {
+export class TrainingTemplateEntity {
   id: string;
   name: string;
-  email: string | null;
-  dni: string | null;
-  password: string | null;
-  educationLevel: string | null;
-  hireDate: Date | null;
-  role: string;
+  version: number;
+  periodDurationDays: number | null;
+  totalPeriods: number | null;
+  minimumPassingScore: number | null;
+  certificateTemplatePdf: string | null;
   status: string;
-  projectId: string | null;
-  areaId: string | null;
+  areaId: string;
+  projectId: string;
   createdAt: Date;
   updatedAt: Date;
 
@@ -17,35 +16,32 @@ export class UserEntity {
    * Campos por los que se puede ordenar.
    * Cualquier campo fuera de esta lista es ignorado silenciosamente.
    */
-  static readonly SORTABLE_FIELDS: (keyof UserEntity)[] = [
+  static readonly SORTABLE_FIELDS: (keyof TrainingTemplateEntity)[] = [
     'name',
-    'email',
+    'version',
     'id',
-    'hireDate',
-    'role',
     'status',
     'createdAt',
+    'periodDurationDays',
+    'totalPeriods',
+    'minimumPassingScore',
   ];
 
   /**
    * Campos sobre los que se pueden aplicar filtros dinámicos.
    * Actúa como whitelist de seguridad — nunca exponer campos sensibles.
    */
-  static readonly FILTERABLE_FIELDS: (keyof UserEntity)[] = [
+  static readonly FILTERABLE_FIELDS: (keyof TrainingTemplateEntity)[] = [
     'name',
-    'email',
     'status',
-    'role',
     'projectId',
     'areaId',
-    'dni',
+    'version',
   ];
 
   /** Campos sobre los que aplica el ?search= global */
-  static readonly SEARCH_FIELDS: (keyof UserEntity)[] = [
+  static readonly SEARCH_FIELDS: (keyof TrainingTemplateEntity)[] = [
     'name',
-    'email',
-    'dni',
     'projectId',
   ];
 
@@ -56,11 +52,11 @@ export class UserEntity {
   static readonly DEFAULT_SELECT = {
     id: true,
     name: true,
-    email: true,
-    dni: true,
-    educationLevel: true,
-    hireDate: true,
-    role: true,
+    version: true,
+    periodDurationDays: true,
+    totalPeriods: true,
+    minimumPassingScore: true,
+    certificateTemplatePdf: true,
     status: true,
     createdAt: true,
     updatedAt: true,
