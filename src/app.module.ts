@@ -8,9 +8,20 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProjectModule } from './project/project.module';
 import { AreaModule } from './area/area.module';
 import { OperationModule } from './operation/operation.module';
+import { UserModule } from './user/user.module';
+import { TrainingTemplateModule } from './training-template/training-template.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, ProjectModule, AreaModule, OperationModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    AuthModule,
+    ProjectModule,
+    AreaModule,
+    OperationModule,
+    UserModule,
+    TrainingTemplateModule,
+  ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
