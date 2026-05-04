@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AreaService } from './area.service';
 import { CreateAreaDto } from './dto/create-area.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
@@ -17,6 +18,9 @@ import { Role } from '../../generated/prisma';
 
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListAreasDto } from './dto/list-areas.dto';
+
+@ApiTags('area')
+@ApiBearerAuth('JWT-auth')
 @Controller('area')
 export class AreaController {
   constructor(private readonly areaService: AreaService) {}

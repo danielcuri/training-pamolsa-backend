@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TrainingTemplateService } from './training-template.service';
 import { CreateTrainingTemplateDto } from './dto/create-training-template.dto';
 import { UpdateTrainingTemplateDto } from './dto/update-training-template.dto';
@@ -18,6 +19,8 @@ import { Role } from '../../generated/prisma';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListTrainingTemplatesDto } from './dto/list-training-templates.dto';
 
+@ApiTags('training-template')
+@ApiBearerAuth('JWT-auth')
 @Controller('training-template')
 export class TrainingTemplateController {
   constructor(

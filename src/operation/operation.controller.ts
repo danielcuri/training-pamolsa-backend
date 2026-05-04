@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { OperationService } from './operation.service';
 import { CreateOperationDto } from './dto/create-operation.dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
@@ -18,6 +19,8 @@ import { Role } from '../../generated/prisma';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListOperationsDto } from './dto/list-operations.dto';
 
+@ApiTags('operation')
+@ApiBearerAuth('JWT-auth')
 @Controller('operation')
 export class OperationController {
   constructor(private readonly operationService: OperationService) {}
