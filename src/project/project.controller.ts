@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -16,6 +17,8 @@ import { Role } from '../../generated/prisma';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListProjectsDto } from './dto/list-projects.dto';
 
+@ApiTags('project')
+@ApiBearerAuth('JWT-auth')
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}

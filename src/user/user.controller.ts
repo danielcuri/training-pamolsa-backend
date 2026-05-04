@@ -8,6 +8,7 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -18,6 +19,8 @@ import { Role } from '../../generated/prisma';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListUsersDto } from './dto/list-users.dto';
 
+@ApiTags('user')
+@ApiBearerAuth('JWT-auth')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
