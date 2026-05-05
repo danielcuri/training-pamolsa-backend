@@ -10,6 +10,7 @@ import { AreaModule } from './area/area.module';
 import { OperationModule } from './operation/operation.module';
 import { UserModule } from './user/user.module';
 import { TrainingTemplateModule } from './training-template/training-template.module';
+import { TemplateOperationModule } from './template-operation/template-operation.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { TrainingTemplateModule } from './training-template/training-template.mo
     OperationModule,
     UserModule,
     TrainingTemplateModule,
+    TemplateOperationModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
