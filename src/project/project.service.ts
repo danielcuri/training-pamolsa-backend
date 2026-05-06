@@ -6,6 +6,7 @@ import {
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { RecordStatus } from '../../generated/prisma/client';
 
 import { ListProjectsDto } from './dto/list-projects.dto';
 import {
@@ -72,7 +73,7 @@ export class ProjectService {
 
     return this.prisma.project.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { status: RecordStatus.INACTIVE },
     });
   }
 }

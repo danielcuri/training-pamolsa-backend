@@ -6,6 +6,7 @@ export class TemplateOperationEntity {
   weightPercent: number | null;
   order: number | null;
   minimumScore: number | null;
+  status: string;
   templateId: string;
   areaOperationId: string | null;
   createdAt: Date;
@@ -22,6 +23,7 @@ export class TemplateOperationEntity {
   static readonly FILTERABLE_FIELDS: (keyof TemplateOperationEntity)[] = [
     'name',
     'priority',
+    'status',
     'templateId',
     'areaOperationId',
   ];
@@ -39,6 +41,7 @@ export class TemplateOperationEntity {
     weightPercent: true,
     order: true,
     minimumScore: true,
+    status: true,
     templateId: true,
     areaOperation: {
       select: {

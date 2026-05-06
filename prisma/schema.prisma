@@ -183,6 +183,8 @@ model TemplateOperation {
 
   minimumScore Float? @map("minimum_score")
 
+  status RecordStatus @default(ACTIVE)
+
   templateId String           @map("template_id")
   template   TrainingTemplate @relation(fields: [templateId], references: [id])
 
