@@ -3,6 +3,7 @@ import { CreateTrainingTemplateDto } from './dto/create-training-template.dto';
 import { UpdateTrainingTemplateDto } from './dto/update-training-template.dto';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { RecordStatus } from '../../generated/prisma/client';
 import { ListTrainingTemplatesDto } from './dto/list-training-templates.dto';
 import { TrainingTemplateEntity } from './entities/training-template.entity';
 import {
@@ -117,7 +118,7 @@ export class TrainingTemplateService {
 
     return this.prisma.trainingTemplate.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { status: RecordStatus.INACTIVE },
       select: TrainingTemplateEntity.DEFAULT_SELECT,
     });
   }

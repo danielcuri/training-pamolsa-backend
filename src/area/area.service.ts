@@ -3,6 +3,7 @@ import { CreateAreaDto } from './dto/create-area.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { RecordStatus } from '../../generated/prisma/client';
 import { ListAreasDto } from './dto/list-areas.dto';
 import { AreaEntity } from './entities/area.entity';
 import {
@@ -72,7 +73,7 @@ export class AreaService {
 
     return this.prisma.area.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { status: RecordStatus.INACTIVE },
     });
   }
 }

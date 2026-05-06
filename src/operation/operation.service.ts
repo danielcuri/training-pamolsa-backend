@@ -4,6 +4,7 @@ import { UpdateOperationDto } from './dto/update-operation.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ListOperationsDto } from './dto/list-operations.dto';
 import { OperationEntity } from './entities/operation.entity';
+import { RecordStatus } from '../../generated/prisma/client';
 
 import {
   buildPaginatedResponse,
@@ -74,7 +75,7 @@ export class OperationService {
 
     return this.prisma.areaOperation.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { status: RecordStatus.INACTIVE },
     });
   }
 }

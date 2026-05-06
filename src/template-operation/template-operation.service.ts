@@ -9,6 +9,7 @@ import {
   buildPrismaQueryParams,
   buildWhere,
 } from 'src/common/helpers';
+import { RecordStatus } from '../../generated/prisma/client';
 
 @Injectable()
 export class TemplateOperationService {
@@ -88,7 +89,7 @@ export class TemplateOperationService {
 
     return this.prisma.templateOperation.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { status: RecordStatus.INACTIVE },
       select: TemplateOperationEntity.DEFAULT_SELECT,
     });
   }
