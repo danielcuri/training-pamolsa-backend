@@ -1,0 +1,102 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '../../generated/prisma';
+import { ResponseMessage } from '../common/decorators/response-message.decorator';
+import { TrainingService } from './training.service';
+import { CreateTrainingDto } from './dto/create-training.dto';
+import { UpdateTrainingDto } from './dto/update-training.dto';
+import { ListTrainingsDto } from './dto/list-trainings.dto';
+import { TrainingEntity } from './entities/training.entity';
+
+@ApiTags('training')
+@ApiBearerAuth('JWT-auth')
+@Controller('training')
+export class TrainingController {
+  constructor(private readonly trainingService: TrainingService) {}
+
+  @Post()
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @ResponseMessage('Capacitación creada correctamente')
+  @ApiOperation({
+    summary: 'Crear capacitación',
+    description:
+      'Crea una capacitación para un usuario usando una plantilla. Requiere `userId` y `templateId`. Aunque `startDate` es nullable en BD, el backend lo exige para generar los periodos.',
+  })
+  @ApiCreatedResponse({ description: 'Capacitación creada', type: TrainingEntity })
+  @ApiBadRequestResponse({
+    description:
+      'Datos inválidos o la plantilla no tiene `totalPeriods`/`periodDurationDays` configurados, o falta `startDate`.',
+  })
+  @ApiNotFoundResponse({ description: 'Plantilla de capacitación no encontrada' })
+  create(@Body() createTrainingDto: CreateTrainingDto) {
+    return this.trainingService.create(createTrainingDto);
+  }
+
+  @Get()
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @ResponseMessage('Capacitaciones obtenidas correctamente')
+  @ApiOperation({
+    summary: 'Listar capacitaciones',
+    description:
+      'Devuelve una lista paginada de capacitaciones. Permite filtros por `userId`, `templateId`, `status`, `result` y parámetros de paginación/orden.',
+  })
+  @ApiOkResponse({
+    description: 'Listado paginado de capacitaciones',
+  })
+  findAll(@Query() dto: ListTrainingsDto) {
+    return this.trainingService.findAll(dto);
+  }
+
+  @Get(':id')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @ResponseMessage('Capacitación obtenida correctamente')
+  @ApiOperation({ summary: 'Obtener capacitación por ID' })
+  @ApiParam({ name: 'id', description: 'ID de la capacitación', format: 'uuid' })
+  @ApiOkResponse({ description: 'Capacitación encontrada', type: TrainingEntity })
+  @ApiNotFoundResponse({ description: 'Capacitación no encontrada' })
+  findOne(@Param('id') id: string) {
+    return this.trainingService.findOne(id);
+  }
+
+  @Patch(':id')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @ResponseMessage('Capacitación actualizada correctamente')
+  @ApiOperation({ summary: 'Actualizar capacitación' })
+  @ApiParam({ name: 'id', description: 'ID de la capacitación', format: 'uuid' })
+  @ApiOkResponse({ description: 'Capacitación actualizada', type: TrainingEntity })
+  @ApiNotFoundResponse({ description: 'Capacitación no encontrada' })
+  update(@Param('id') id: string, @Body() updateTrainingDto: UpdateTrainingDto) {
+    return this.trainingService.update(id, updateTrainingDto);
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @ResponseMessage('Capacitación eliminada correctamente')
+  @ApiOperation({ summary: 'Eliminar capacitación (soft delete)' })
+  @ApiParam({ name: 'id', description: 'ID de la capacitación', format: 'uuid' })
+  @ApiOkResponse({ description: 'Capacitación eliminada', type: TrainingEntity })
+  @ApiNotFoundResponse({ description: 'Capacitación no encontrada' })
+  remove(@Param('id') id: string) {
+    return this.trainingService.remove(id);
+  }
+}
+

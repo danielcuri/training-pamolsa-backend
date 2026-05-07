@@ -9,6 +9,7 @@ import {
   ValidateNested,
   IsObject,
 } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum SortOrder {
   ASC = 'asc',
@@ -16,12 +17,23 @@ export enum SortOrder {
 }
 
 export class PaginationDto {
+  @ApiPropertyOptional({
+    description: 'Página (1-indexed).',
+    minimum: 1,
+    default: 1,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
   page?: number = 1;
 
+  @ApiPropertyOptional({
+    description: 'Cantidad de registros por página.',
+    minimum: 1,
+    maximum: 100,
+    default: 20,
+  })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
@@ -29,18 +41,33 @@ export class PaginationDto {
   @Max(100)
   limit?: number = 20;
 
+  @ApiPropertyOptional({
+    description: 'Campo por el cual ordenar.',
+    default: 'createdAt',
+  })
   @IsOptional()
   @IsString()
   sortBy?: string = 'createdAt';
 
+  @ApiPropertyOptional({
+    description: 'Orden de ordenamiento.',
+    enum: SortOrder,
+    default: SortOrder.DESC,
+  })
   @IsOptional()
   @IsEnum(SortOrder)
   order?: SortOrder = SortOrder.DESC;
 
+  @ApiPropertyOptional({
+    description: 'Búsqueda global (aplica a campos configurados por entidad).',
+  })
   @IsOptional()
   @IsString()
   search?: string;
 
+  @ApiPropertyOptional({
+    description: 'Cursor para paginación basada en cursor (si aplica).',
+  })
   @IsOptional()
   @IsString()
   cursor?: string;
@@ -49,6 +76,11 @@ export class PaginationDto {
    * Filtros dinámicos. Se envía como JSON string en la URL.
    * Ejemplo: ?filter={"status__in":"ACTIVE,PENDING","deletedAt__null":"true"}
    */
+  @ApiPropertyOptional({
+    description:
+      'Filtros dinámicos como JSON string. Ej: `{"status__in":"ACTIVE,INACTIVE"}`',
+    type: Object,
+  })
   @IsOptional()
   @Transform(({ value }) => {
     if (typeof value === 'string') {

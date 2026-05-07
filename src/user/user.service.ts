@@ -11,6 +11,7 @@ import {
   buildPrismaQueryParams,
   buildWhere,
 } from 'src/common/helpers';
+import { RecordStatus } from 'generated/prisma/enums';
 
 @Injectable()
 export class UserService {
@@ -87,7 +88,7 @@ export class UserService {
 
     return this.prisma.user.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { deletedAt: new Date(), status: RecordStatus.INACTIVE },
       select: UserEntity.DEFAULT_SELECT,
     });
   }
