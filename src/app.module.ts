@@ -11,6 +11,7 @@ import { OperationModule } from './operation/operation.module';
 import { UserModule } from './user/user.module';
 import { TrainingTemplateModule } from './training-template/training-template.module';
 import { TemplateOperationModule } from './template-operation/template-operation.module';
+import { TrainingModule } from './training/training.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TemplateOperationModule } from './template-operation/template-operation
     UserModule,
     TrainingTemplateModule,
     TemplateOperationModule,
+    TrainingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
