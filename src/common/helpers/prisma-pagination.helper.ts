@@ -59,20 +59,32 @@ export function buildWhere<T extends Record<string, any>>(
 ): T {
   const dynamicWhere = buildDynamicWhere(dto.filter, dto.filterWhitelist);
 
+  const directFilters =
+    dto.filterWhitelist?.reduce((acc, field) => {
+      const value = (dto as any)[field];
+
+      if (value !== undefined && value !== null && value !== '') {
+        acc[field] = value;
+      }
+
+      return acc;
+    }, {} as Record<string, any>) ?? {};
+
   const searchClause =
     dto.search && searchFields.length > 0
       ? {
-          OR: searchFields.map((field) => ({
-            [field]: {
-              contains: dto.search,
-              mode: 'insensitive' as const,
-            },
-          })),
-        }
+        OR: searchFields.map((field) => ({
+          [field]: {
+            contains: dto.search,
+            mode: 'insensitive' as const,
+          },
+        })),
+      }
       : {};
 
   return {
     ...dynamicWhere,
+    ...directFilters,
     ...searchClause,
   } as T;
 }
