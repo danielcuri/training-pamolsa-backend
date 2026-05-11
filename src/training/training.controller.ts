@@ -31,7 +31,7 @@ import { TrainingEntity } from './entities/training.entity';
 @ApiBearerAuth('JWT-auth')
 @Controller('training')
 export class TrainingController {
-  constructor(private readonly trainingService: TrainingService) {}
+  constructor(private readonly trainingService: TrainingService) { }
 
   @Post()
   @Roles(Role.ADMIN, Role.SUPERADMIN)
@@ -64,6 +64,29 @@ export class TrainingController {
   })
   findAll(@Query() dto: ListTrainingsDto) {
     return this.trainingService.findAll(dto);
+  }
+
+  @Get(':id/matrix')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @ResponseMessage('Matriz de entrenamiento obtenida correctamente')
+  @ApiOperation({
+    summary: 'Obtener matriz de entrenamiento',
+    description:
+      'Devuelve la información completa de una capacitación para pintar la matriz: colaborador, plantilla, operaciones, periodos, evaluador, validaciones, refuerzos y puntajes.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la capacitación',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'Matriz de entrenamiento obtenida correctamente',
+  })
+  @ApiNotFoundResponse({
+    description: 'Capacitación no encontrada',
+  })
+  findMatrix(@Param('id') id: string) {
+    return this.trainingService.findMatrix(id);
   }
 
   @Get(':id')
