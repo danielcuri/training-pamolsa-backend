@@ -13,7 +13,7 @@ import {
 
 @Injectable()
 export class TrainingService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   private addDays(date: Date, days: number): Date {
     const d = new Date(date);
@@ -138,6 +138,280 @@ export class TrainingService {
       data: { deletedAt: new Date() },
       select: TrainingEntity.DEFAULT_SELECT,
     });
+  }
+  async findMatrix(id: string) {
+    const training = await this.prisma.training.findFirst({
+      where: {
+        id,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        startDate: true,
+        status: true,
+        result: true,
+        createdAt: true,
+        updatedAt: true,
+
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            dni: true,
+            educationLevel: true,
+            hireDate: true,
+            role: true,
+            status: true,
+          },
+        },
+
+        template: {
+          select: {
+            id: true,
+            name: true,
+            version: true,
+            periodDurationDays: true,
+            totalPeriods: true,
+            minimumPassingScore: true,
+            status: true,
+
+            project: {
+              select: {
+                id: true,
+                name: true,
+                status: true,
+              },
+            },
+
+            area: {
+              select: {
+                id: true,
+                name: true,
+                status: true,
+              },
+            },
+
+            operations: {
+              where: {
+                deletedAt: null,
+              },
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                priority: true,
+                weightPercent: true,
+                order: true,
+                minimumScore: true,
+                status: true,
+                areaOperationId: true,
+                createdAt: true,
+              },
+              orderBy: [
+                {
+                  order: 'asc',
+                },
+                {
+                  createdAt: 'asc',
+                },
+              ],
+            },
+          },
+        },
+
+        periods: {
+          where: {
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            periodNumber: true,
+            startDate: true,
+            endDate: true,
+            evaluationDate: true,
+            validationNotes: true,
+            reinforcementNotes: true,
+            status: true,
+
+            evaluator: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                dni: true,
+                role: true,
+              },
+            },
+
+            logs: {
+              where: {
+                deletedAt: null,
+              },
+              select: {
+                id: true,
+                templateOperationId: true,
+                score: true,
+                checklist: true,
+                notes: true,
+                evaluator: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    dni: true,
+                    role: true,
+                  },
+                },
+                createdAt: true,
+                updatedAt: true,
+              },
+              orderBy: [
+                {
+                  createdAt: 'desc',
+                },
+                {
+                  updatedAt: 'desc',
+                },
+              ],
+            },
+          },
+          orderBy: {
+            periodNumber: 'asc',
+          },
+        },
+      },
+    });
+
+    if (!training) {
+      throw new NotFoundException('Capacitación no encontrada');
+    }
+
+    const operations = training.template.operations.map((operation, index) => ({
+      id: operation.id,
+      order: operation.order ?? index + 1,
+      title: `Operación ${operation.order ?? index + 1}`,
+      name: operation.name,
+      description: operation.description,
+      priority: operation.priority,
+      weightPercent: operation.weightPercent,
+      minimumScore: operation.minimumScore,
+      status: operation.status,
+      areaOperationId: operation.areaOperationId,
+      cartilla: null,
+    }));
+
+    const periods = training.periods.map((period) => {
+      const logsByOperation = new Map<string, (typeof period.logs)[number]>();
+
+      for (const log of period.logs) {
+        if (!logsByOperation.has(log.templateOperationId)) {
+          logsByOperation.set(log.templateOperationId, log);
+        }
+      }
+
+      const periodScores = operations.map((operation) => {
+        const log = logsByOperation.get(operation.id);
+
+        return {
+          operationId: operation.id,
+          logId: log?.id ?? null,
+          score: log?.score ?? null,
+          checklist: log?.checklist ?? null,
+          notes: log?.notes ?? null,
+          evaluator: log?.evaluator ?? null,
+          createdAt: log?.createdAt ?? null,
+          updatedAt: log?.updatedAt ?? null,
+        };
+      });
+
+      return {
+        id: period.id,
+        periodNumber: period.periodNumber,
+        title: this.buildPeriodTitle(
+          period.periodNumber,
+          training.template.periodDurationDays,
+        ),
+        startDate: period.startDate,
+        endDate: period.endDate,
+        evaluationDate: period.evaluationDate,
+        status: period.status,
+
+        evaluator: period.evaluator,
+
+        validationNotes: period.validationNotes,
+        reinforcementNotes: period.reinforcementNotes,
+
+        qtyOperationTotal: operations.length,
+        qtyOperationStarted: periodScores.filter((score) => score.score !== null)
+          .length,
+
+        scores: periodScores,
+      };
+    });
+
+    return {
+      training: {
+        id: training.id,
+        startDate: training.startDate,
+        status: training.status,
+        result: training.result,
+        createdAt: training.createdAt,
+        updatedAt: training.updatedAt,
+      },
+
+      collaborator: {
+        id: training.user.id,
+        name: training.user.name,
+        email: training.user.email,
+        dni: training.user.dni,
+        educationLevel: training.user.educationLevel,
+        hireDate: training.user.hireDate,
+        role: training.user.role,
+        status: training.user.status,
+      },
+
+      template: {
+        id: training.template.id,
+        name: training.template.name,
+        version: training.template.version,
+        periodDurationDays: training.template.periodDurationDays,
+        totalPeriods: training.template.totalPeriods,
+        minimumPassingScore: training.template.minimumPassingScore,
+        status: training.template.status,
+      },
+
+      project: training.template.project,
+      area: training.template.area,
+
+      summary: {
+        totalOperations: operations.length,
+        totalPeriods: periods.length,
+        minimumPassingScore: training.template.minimumPassingScore ?? 5,
+      },
+      operations,
+      periods,
+    };
+  }
+  private buildPeriodTitle(
+    periodNumber: number,
+    periodDurationDays: number | null,
+  ) {
+    if (!periodDurationDays) {
+      return `Periodo ${periodNumber}`;
+    }
+
+    const totalDays = periodNumber * periodDurationDays;
+
+    if (totalDays % 30 === 0) {
+      const months = totalDays / 30;
+
+      return `Después de ${months} ${months === 1 ? 'mes' : 'meses'
+        } del ingreso`;
+    }
+
+    return `Después de ${totalDays} ${totalDays === 1 ? 'día' : 'días'
+      } del ingreso`;
   }
 }
 
