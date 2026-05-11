@@ -130,6 +130,8 @@ model User {
   evaluationsDone TrainingEvaluation[] @relation("Evaluator")
   evaluatedLogs   TrainingLog[]
 
+  evaluatedPeriods TrainingPeriod[] @relation("TrainingPeriodEvaluator")
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
@@ -234,16 +236,26 @@ model TrainingPeriod {
   startDate DateTime? @map("start_date")
   endDate   DateTime? @map("end_date")
 
-  status PeriodStatus
+  evaluationDate DateTime? @map("evaluation_date")
+
+  evaluatorId String? @map("evaluator_id")
+  evaluator   User?   @relation("TrainingPeriodEvaluator", fields: [evaluatorId], references: [id])
+
+  validationNotes    String? @map("validation_notes")
+  reinforcementNotes String? @map("reinforcement_notes")
+
+  status PeriodStatus @default(NOT_STARTED)
 
   training Training @relation(fields: [trainingId], references: [id])
 
-  logs      TrainingLog[]
-  createdAt DateTime      @default(now()) @map("created_at")
-  updatedAt DateTime      @updatedAt @map("updated_at")
-  deletedAt DateTime?     @map("deleted_at")
+  logs TrainingLog[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   @@index([trainingId])
+  @@index([evaluatorId])
   @@map("training_periods")
 }
 
