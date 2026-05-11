@@ -5,6 +5,7 @@ import { UpdateTrainingDto } from './dto/update-training.dto';
 import { ListTrainingsDto } from './dto/list-trainings.dto';
 import { TrainingEntity } from './entities/training.entity';
 import { PeriodStatus } from '../../generated/prisma/client';
+import { CreatePeriodProgressDto } from './dto/create-period-progress.dto';
 import {
   buildPaginatedResponse,
   buildPrismaQueryParams,
@@ -412,6 +413,102 @@ export class TrainingService {
 
     return `Después de ${totalDays} ${totalDays === 1 ? 'día' : 'días'
       } del ingreso`;
+  }
+  async createPeriodProgress(periodId: string, dto: CreatePeriodProgressDto) {
+    const period = await this.prisma.trainingPeriod.findFirst({
+      where: {
+        id: periodId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        trainingId: true,
+        training: {
+          select: {
+            id: true,
+            templateId: true,
+          },
+        },
+      },
+    });
+
+    if (!period) {
+      throw new NotFoundException('Periodo de capacitación no encontrado');
+    }
+
+    const operationIds = dto.scores.map((item) => item.templateOperationId);
+    const uniqueOperationIds = new Set(operationIds);
+
+    if (uniqueOperationIds.size !== operationIds.length) {
+      throw new BadRequestException(
+        'No se puede enviar la misma operación más de una vez en el mismo registro',
+      );
+    }
+
+    const validOperations = await this.prisma.templateOperation.findMany({
+      where: {
+        id: {
+          in: operationIds,
+        },
+        templateId: period.training.templateId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (validOperations.length !== operationIds.length) {
+      throw new BadRequestException(
+        'Una o más operaciones no pertenecen a la plantilla de esta capacitación',
+      );
+    }
+
+    if (dto.evaluatorId) {
+      const evaluator = await this.prisma.user.findFirst({
+        where: {
+          id: dto.evaluatorId,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      if (!evaluator) {
+        throw new NotFoundException('Evaluador no encontrado');
+      }
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.trainingPeriod.update({
+        where: {
+          id: periodId,
+        },
+        data: {
+          evaluationDate: dto.evaluationDate
+            ? new Date(dto.evaluationDate)
+            : undefined,
+          evaluatorId: dto.evaluatorId,
+          validationNotes: dto.validationNotes,
+          reinforcementNotes: dto.reinforcementNotes,
+          status: PeriodStatus.IN_PROGRESS,
+        },
+      });
+
+      await tx.trainingLog.createMany({
+        data: dto.scores.map((item) => ({
+          trainingPeriodId: periodId,
+          templateOperationId: item.templateOperationId,
+          score: item.score,
+          checklist: item.checklist,
+          notes: item.notes,
+          evaluatorId: dto.evaluatorId,
+        })),
+      });
+    });
+
+    return this.findMatrix(period.trainingId);
   }
 }
 
