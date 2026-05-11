@@ -1,6 +1,7 @@
+import { IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { UserEntity } from '../entities/user.entity';
-import { IsOptional, IsUUID } from 'class-validator';
+import { RecordStatus } from '../../../generated/prisma/enums';
 
 export class ListUsersDto extends PaginationDto {
   @IsOptional()
@@ -10,6 +11,10 @@ export class ListUsersDto extends PaginationDto {
   @IsOptional()
   @IsUUID()
   areaId?: string;
+
+  @IsOptional()
+  @IsEnum(RecordStatus)
+  status?: RecordStatus;
 
   override get filterWhitelist(): string[] {
     return UserEntity.FILTERABLE_FIELDS as string[];
