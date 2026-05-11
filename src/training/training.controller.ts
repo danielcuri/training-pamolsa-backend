@@ -26,6 +26,7 @@ import { CreateTrainingDto } from './dto/create-training.dto';
 import { UpdateTrainingDto } from './dto/update-training.dto';
 import { ListTrainingsDto } from './dto/list-trainings.dto';
 import { TrainingEntity } from './entities/training.entity';
+import { CreatePeriodProgressDto } from './dto/create-period-progress.dto';
 
 @ApiTags('training')
 @ApiBearerAuth('JWT-auth')
@@ -64,6 +65,35 @@ export class TrainingController {
   })
   findAll(@Query() dto: ListTrainingsDto) {
     return this.trainingService.findAll(dto);
+  }
+
+  @Post('periods/:periodId/progress')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @ResponseMessage('Progreso del periodo registrado correctamente')
+  @ApiOperation({
+    summary: 'Registrar progreso grupal de un periodo',
+    description:
+      'Registra en grupo los puntajes de varias operaciones dentro de un periodo. Actualiza los datos generales del periodo y crea logs históricos por operación.',
+  })
+  @ApiParam({
+    name: 'periodId',
+    description: 'ID del periodo de capacitación',
+    format: 'uuid',
+  })
+  @ApiCreatedResponse({
+    description: 'Progreso del periodo registrado correctamente',
+  })
+  @ApiBadRequestResponse({
+    description: 'Datos inválidos o una operación no pertenece a la plantilla de la capacitación',
+  })
+  @ApiNotFoundResponse({
+    description: 'Periodo de capacitación no encontrado',
+  })
+  createPeriodProgress(
+    @Param('periodId') periodId: string,
+    @Body() dto: CreatePeriodProgressDto,
+  ) {
+    return this.trainingService.createPeriodProgress(periodId, dto);
   }
 
   @Get(':id/matrix')
