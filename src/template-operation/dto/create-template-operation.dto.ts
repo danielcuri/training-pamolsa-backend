@@ -8,6 +8,10 @@ import {
 } from 'class-validator';
 
 export class CreateTemplateOperationDto {
+  @IsOptional()
+  @IsString()
+  code?: string;
+
   @IsString()
   name: string;
 

@@ -208,6 +208,7 @@ export class TrainingService {
                 status: true,
                 areaOperationId: true,
                 createdAt: true,
+                code: true,
               },
               orderBy: [
                 {
@@ -299,7 +300,7 @@ export class TrainingService {
       minimumScore: operation.minimumScore,
       status: operation.status,
       areaOperationId: operation.areaOperationId,
-      cartilla: null,
+      cartilla: operation.code,
     }));
 
     const periods = training.periods.map((period) => {
