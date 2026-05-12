@@ -175,9 +175,9 @@ model TrainingTemplate {
 model TemplateOperation {
   id String @id @default(uuid())
 
-  name        String
-  description String?
-
+  name          String
+  description   String?
+  code          String?
   priority      OperationPriority
   weightPercent Float?            @map("weight_percent")
 
