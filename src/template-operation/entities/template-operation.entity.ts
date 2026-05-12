@@ -11,6 +11,7 @@ export class TemplateOperationEntity {
   areaOperationId: string | null;
   createdAt: Date;
   updatedAt: Date;
+  code: string | null;
 
   static readonly SORTABLE_FIELDS: (keyof TemplateOperationEntity)[] = [
     'name',
@@ -18,6 +19,7 @@ export class TemplateOperationEntity {
     'order',
     'priority',
     'createdAt',
+    'code',
   ];
 
   static readonly FILTERABLE_FIELDS: (keyof TemplateOperationEntity)[] = [
@@ -26,11 +28,13 @@ export class TemplateOperationEntity {
     'status',
     'templateId',
     'areaOperationId',
+    'code',
   ];
 
   static readonly SEARCH_FIELDS: (keyof TemplateOperationEntity)[] = [
     'name',
     'templateId',
+    'code'
   ];
 
   static readonly DEFAULT_SELECT = {
@@ -54,6 +58,9 @@ export class TemplateOperationEntity {
         areaId: true,
       },
     },
+    areaOperationId: true,
+    updatedAt: true,
     createdAt: true,
+    code: true,
   } as const;
 }
