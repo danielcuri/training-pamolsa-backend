@@ -9,6 +9,11 @@ export class CreateOperationDto {
   @IsNotEmpty()
   name: string;
 
+
+  @IsOptional()
+  @IsString()
+  code?: string;
+
   @IsString()
   @IsOptional()
   description?: string;

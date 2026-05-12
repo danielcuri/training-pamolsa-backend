@@ -153,7 +153,6 @@ export class TrainingService {
         result: true,
         createdAt: true,
         updatedAt: true,
-
         user: {
           select: {
             id: true,
@@ -166,7 +165,6 @@ export class TrainingService {
             status: true,
           },
         },
-
         template: {
           select: {
             id: true,
@@ -176,7 +174,6 @@ export class TrainingService {
             totalPeriods: true,
             minimumPassingScore: true,
             status: true,
-
             project: {
               select: {
                 id: true,
@@ -184,7 +181,6 @@ export class TrainingService {
                 status: true,
               },
             },
-
             area: {
               select: {
                 id: true,
@@ -192,7 +188,6 @@ export class TrainingService {
                 status: true,
               },
             },
-
             operations: {
               where: {
                 deletedAt: null,
@@ -208,7 +203,13 @@ export class TrainingService {
                 status: true,
                 areaOperationId: true,
                 createdAt: true,
-                code: true,
+                areaOperation: {
+                  select: {
+                    id: true,
+                    code: true,
+                    name: true,
+                  },
+                },
               },
               orderBy: [
                 {
@@ -300,7 +301,7 @@ export class TrainingService {
       minimumScore: operation.minimumScore,
       status: operation.status,
       areaOperationId: operation.areaOperationId,
-      code: operation.code,
+      code: operation.areaOperation?.code ?? null,
     }));
 
     const periods = training.periods.map((period) => {
