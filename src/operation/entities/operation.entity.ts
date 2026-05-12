@@ -8,12 +8,12 @@ export class OperationEntity {
   areaId: string;
   createdAt: Date;
   updatedAt: Date;
-
+  code: string | null;
   /**
    * Campos por los que se puede ordenar.
    * Cualquier campo fuera de esta lista es ignorado silenciosamente.
    */
-  static readonly SORTABLE_FIELDS: (keyof OperationEntity)[] = ['name', 'id'];
+  static readonly SORTABLE_FIELDS: (keyof OperationEntity)[] = ['name', 'id', 'code'];
 
   /**
    * Campos sobre los que se pueden aplicar filtros dinámicos.
@@ -24,10 +24,11 @@ export class OperationEntity {
     'description',
     'priority',
     'areaId',
+    'code',
   ];
 
   /** Campos sobre los que aplica el ?search= global */
-  static readonly SEARCH_FIELDS: (keyof OperationEntity)[] = ['name', 'areaId'];
+  static readonly SEARCH_FIELDS: (keyof OperationEntity)[] = ['name', 'areaId', 'code'];
 
   /**
    * Campos que se retornan por defecto en los listados.
@@ -36,11 +37,14 @@ export class OperationEntity {
   static readonly DEFAULT_SELECT = {
     id: true,
     name: true,
+    code: true,
     description: true,
     weightPercent: true,
     priority: true,
     status: true,
+    areaId: true,
     createdAt: true,
+    updatedAt: true,
     area: {
       select: {
         id: true,
