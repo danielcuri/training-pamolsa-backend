@@ -300,7 +300,7 @@ export class TrainingService {
       minimumScore: operation.minimumScore,
       status: operation.status,
       areaOperationId: operation.areaOperationId,
-      cartilla: operation.code,
+      code: operation.code,
     }));
 
     const periods = training.periods.map((period) => {
