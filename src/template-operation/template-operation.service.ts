@@ -13,7 +13,7 @@ import { RecordStatus } from '../../generated/prisma/client';
 
 @Injectable()
 export class TemplateOperationService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(templateId: string, dto: CreateTemplateOperationDto) {
     const template = await this.prisma.trainingTemplate.findUnique({
@@ -50,7 +50,12 @@ export class TemplateOperationService {
       this.prisma.templateOperation.count({ where }),
     ]);
 
-    return buildPaginatedResponse(data, total, dto);
+    const dataWithOperationCode = data.map((item) => ({
+      ...item,
+      code: item.areaOperation?.code ?? item.code ?? null,
+    }));
+
+    return buildPaginatedResponse(dataWithOperationCode, total, dto);
   }
 
   async findOne(templateId: string, id: string) {

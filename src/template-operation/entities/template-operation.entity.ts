@@ -50,6 +50,7 @@ export class TemplateOperationEntity {
     areaOperation: {
       select: {
         id: true,
+        code: true,
         name: true,
         description: true,
         priority: true,
