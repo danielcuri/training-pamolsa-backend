@@ -7,6 +7,7 @@ import {
   Patch,
   Post,
   Query,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -94,6 +95,21 @@ export class TrainingController {
     @Body() dto: CreatePeriodProgressDto,
   ) {
     return this.trainingService.createPeriodProgress(periodId, dto);
+  }
+
+  @Get('evaluable')
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.SUPERVISOR)
+  @ResponseMessage('Entrenamientos evaluables obtenidos correctamente')
+  @ApiOperation({
+    summary: 'Listar entrenamientos evaluables',
+    description:
+      'Devuelve las cabeceras de entrenamientos que el usuario logueado puede evaluar según su proyecto y área.',
+  })
+  @ApiOkResponse({
+    description: 'Listado de entrenamientos evaluables',
+  })
+  findEvaluableTrainings(@Req() req: any, @Query() dto: ListTrainingsDto) {
+    return this.trainingService.findEvaluableTrainings(req.user.id, dto);
   }
 
   @Get(':id/matrix')

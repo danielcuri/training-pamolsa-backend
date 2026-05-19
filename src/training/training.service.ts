@@ -1,10 +1,19 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTrainingDto } from './dto/create-training.dto';
 import { UpdateTrainingDto } from './dto/update-training.dto';
 import { ListTrainingsDto } from './dto/list-trainings.dto';
 import { TrainingEntity } from './entities/training.entity';
-import { PeriodStatus } from '../../generated/prisma/client';
+import {
+  PeriodStatus,
+  RecordStatus,
+  Role,
+} from '../../generated/prisma/client';
 import { CreatePeriodProgressDto } from './dto/create-period-progress.dto';
 import {
   buildPaginatedResponse,
@@ -511,6 +520,207 @@ export class TrainingService {
     });
 
     return this.findMatrix(period.trainingId);
+  }
+  async findEvaluableTrainings(authUserId: string, dto: ListTrainingsDto) {
+    const loggedUser = await this.prisma.user.findFirst({
+      where: {
+        id: authUserId,
+        deletedAt: null,
+        status: RecordStatus.ACTIVE,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        projectId: true,
+        areaId: true,
+        project: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          },
+        },
+        area: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+          },
+        },
+      },
+    });
+
+    if (!loggedUser) {
+      throw new NotFoundException('Usuario logueado no encontrado');
+    }
+
+    if (loggedUser.role === Role.COLLABORATOR) {
+      throw new ForbiddenException(
+        'No tienes permisos para visualizar entrenamientos evaluables',
+      );
+    }
+
+    if (!loggedUser.projectId || !loggedUser.areaId) {
+      throw new BadRequestException(
+        'El usuario logueado debe tener un proyecto y área asignados',
+      );
+    }
+
+    const where = {
+      deletedAt: null,
+
+      ...(dto.status && {
+        status: dto.status,
+      }),
+
+      ...(dto.result && {
+        result: dto.result,
+      }),
+
+      user: {
+        deletedAt: null,
+        status: RecordStatus.ACTIVE,
+        role: Role.COLLABORATOR,
+        projectId: loggedUser.projectId,
+        areaId: loggedUser.areaId,
+      },
+
+      template: {
+        deletedAt: null,
+        projectId: loggedUser.projectId,
+        areaId: loggedUser.areaId,
+      },
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.training.findMany({
+        where,
+        select: {
+          id: true,
+          startDate: true,
+          status: true,
+          result: true,
+          createdAt: true,
+          updatedAt: true,
+
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              dni: true,
+              educationLevel: true,
+              hireDate: true,
+              role: true,
+              status: true,
+              projectId: true,
+              areaId: true,
+            },
+          },
+
+          template: {
+            select: {
+              id: true,
+              name: true,
+              version: true,
+              periodDurationDays: true,
+              totalPeriods: true,
+              minimumPassingScore: true,
+              status: true,
+              project: {
+                select: {
+                  id: true,
+                  name: true,
+                  status: true,
+                },
+              },
+              area: {
+                select: {
+                  id: true,
+                  name: true,
+                  status: true,
+                },
+              },
+            },
+          },
+
+          periods: {
+            where: {
+              deletedAt: null,
+            },
+            select: {
+              id: true,
+              periodNumber: true,
+              status: true,
+            },
+            orderBy: {
+              periodNumber: 'asc',
+            },
+          },
+        },
+        ...buildPrismaQueryParams(dto, dto.allowedSortFields),
+      }),
+
+      this.prisma.training.count({
+        where,
+      }),
+    ]);
+
+    const rows = data.map((training) => {
+      const totalPeriods = training.periods.length;
+
+      const completedPeriods = training.periods.filter(
+        (period) => period.status === PeriodStatus.COMPLETED,
+      ).length;
+
+      const progressPercentage =
+        totalPeriods === 0
+          ? 0
+          : Number(((completedPeriods / totalPeriods) * 100).toFixed(2));
+
+      return {
+        id: training.id,
+        startDate: training.startDate,
+        status: training.status,
+        result: training.result,
+        createdAt: training.createdAt,
+        updatedAt: training.updatedAt,
+
+        collaborator: {
+          id: training.user.id,
+          name: training.user.name,
+          email: training.user.email,
+          dni: training.user.dni,
+          educationLevel: training.user.educationLevel,
+          hireDate: training.user.hireDate,
+          status: training.user.status,
+        },
+
+        template: {
+          id: training.template.id,
+          name: training.template.name,
+          version: training.template.version,
+          periodDurationDays: training.template.periodDurationDays,
+          totalPeriods: training.template.totalPeriods,
+          minimumPassingScore: training.template.minimumPassingScore,
+          status: training.template.status,
+        },
+
+        project: training.template.project,
+        area: training.template.area,
+
+        progress: {
+          totalPeriods,
+          completedPeriods,
+          pendingPeriods: totalPeriods - completedPeriods,
+          percentage: progressPercentage,
+        },
+      };
+    });
+
+    return buildPaginatedResponse(rows, total, dto);
   }
 }
 
