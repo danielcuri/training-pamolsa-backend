@@ -113,7 +113,7 @@ export class TrainingController {
   }
 
   @Get(':id/matrix')
-  @Roles(Role.ADMIN, Role.SUPERADMIN)
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.SUPERVISOR)
   @ResponseMessage('Matriz de entrenamiento obtenida correctamente')
   @ApiOperation({
     summary: 'Obtener matriz de entrenamiento',

@@ -337,6 +337,10 @@ export class TrainingService {
         };
       });
 
+      const canEdit =
+        period.status !== PeriodStatus.COMPLETED &&
+        this.isCurrentEditablePeriod(period.startDate, period.endDate);
+
       return {
         id: period.id,
         periodNumber: period.periodNumber,
@@ -348,6 +352,8 @@ export class TrainingService {
         endDate: period.endDate,
         evaluationDate: period.evaluationDate,
         status: period.status,
+
+        canEdit,
 
         evaluator: period.evaluator,
 
@@ -361,6 +367,7 @@ export class TrainingService {
         scores: periodScores,
       };
     });
+    const editablePeriod = periods.find((period) => period.canEdit);
 
     return {
       training: {
@@ -400,7 +407,10 @@ export class TrainingService {
         totalOperations: operations.length,
         totalPeriods: periods.length,
         minimumPassingScore: training.template.minimumPassingScore ?? 5,
+        editablePeriodId: editablePeriod?.id ?? null,
+        editablePeriodNumber: editablePeriod?.periodNumber ?? null,
       },
+
       operations,
       periods,
     };
@@ -424,6 +434,20 @@ export class TrainingService {
 
     return `Después de ${totalDays} ${totalDays === 1 ? 'día' : 'días'
       } del ingreso`;
+  }
+  private isCurrentEditablePeriod(
+    startDate: Date | null,
+    endDate: Date | null,
+    currentDate = new Date(),
+  ): boolean {
+    if (!startDate || !endDate) {
+      return false;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    return currentDate >= start && currentDate < end;
   }
   async createPeriodProgress(periodId: string, dto: CreatePeriodProgressDto) {
     const period = await this.prisma.trainingPeriod.findFirst({
