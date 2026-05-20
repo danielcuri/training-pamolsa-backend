@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE `projects` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
@@ -242,4 +242,3 @@ ALTER TABLE `evaluation_details` ADD CONSTRAINT `evaluation_details_evaluation_i
 
 -- AddForeignKey
 ALTER TABLE `evaluation_details` ADD CONSTRAINT `evaluation_details_template_operation_id_fkey` FOREIGN KEY (`template_operation_id`) REFERENCES `template_operations`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-

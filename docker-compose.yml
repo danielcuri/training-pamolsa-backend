@@ -4,14 +4,16 @@ services:
     container_name: nest_mysql_db
     restart: always
     ports:
-      - '3306:3306'
+      # 3308 evita conflicto con mysqld local en Windows (a menudo usa 3306/3307)
+      - '3308:3306'
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: training_db
+      MYSQL_DATABASE: db_training
       MYSQL_USER: nestuser
       MYSQL_PASSWORD: nestpassword
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./docker/mysql/01-grants.sql:/docker-entrypoint-initdb.d/01-grants.sql:ro
 
 volumes:
   mysql_data:
