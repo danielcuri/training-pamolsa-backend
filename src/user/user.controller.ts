@@ -14,7 +14,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../../generated/prisma';
+import { Role } from '../../generated/prisma/client';
 
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListUsersDto } from './dto/list-users.dto';

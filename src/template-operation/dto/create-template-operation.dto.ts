@@ -1,4 +1,4 @@
-import { OperationPriority } from '../../../generated/prisma';
+import { OperationPriority } from '../../../generated/prisma/client';
 import {
   IsEnum,
   IsNumber,

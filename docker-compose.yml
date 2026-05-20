@@ -1,18 +1,17 @@
-version: '3.9'
-
 services:
-  postgres:
-    image: postgres:16
-    container_name: nest_postgres_db
+  mysql:
+    image: mysql:8.4
+    container_name: nest_mysql_db
     restart: always
     ports:
-      - '5432:5432'
+      - '3306:3306'
     environment:
-      POSTGRES_USER: nestuser
-      POSTGRES_PASSWORD: nestpassword
-      POSTGRES_DB: training_db
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: training_db
+      MYSQL_USER: nestuser
+      MYSQL_PASSWORD: nestpassword
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
 
 volumes:
-  postgres_data:
+  mysql_data:
