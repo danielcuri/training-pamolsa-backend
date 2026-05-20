@@ -20,7 +20,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../../generated/prisma';
+import { Role } from '../../generated/prisma/client';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { TrainingService } from './training.service';
 import { CreateTrainingDto } from './dto/create-training.dto';

@@ -14,7 +14,7 @@ import { CreateTrainingTemplateDto } from './dto/create-training-template.dto';
 import { UpdateTrainingTemplateDto } from './dto/update-training-template.dto';
 
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../../generated/prisma';
+import { Role } from '../../generated/prisma/client';
 
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListTrainingTemplatesDto } from './dto/list-training-templates.dto';

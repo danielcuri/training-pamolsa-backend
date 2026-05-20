@@ -14,7 +14,7 @@ import { CreateOperationDto } from './dto/create-operation.dto';
 import { UpdateOperationDto } from './dto/update-operation.dto';
 
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../../generated/prisma';
+import { Role } from '../../generated/prisma/client';
 
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListOperationsDto } from './dto/list-operations.dto';

@@ -13,7 +13,7 @@ import { ProjectService } from './project.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../../generated/prisma';
+import { Role } from '../../generated/prisma/client';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListProjectsDto } from './dto/list-projects.dto';
 

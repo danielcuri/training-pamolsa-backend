@@ -13,7 +13,7 @@ import { TemplateOperationService } from './template-operation.service';
 import { CreateTemplateOperationDto } from './dto/create-template-operation.dto';
 import { UpdateTemplateOperationDto } from './dto/update-template-operation.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Role } from '../../generated/prisma';
+import { Role } from '../../generated/prisma/client';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListTemplateOperationsDto } from './dto/list-template-operations.dto';
 

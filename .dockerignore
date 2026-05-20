@@ -1,0 +1,25 @@
+# Dependencias y artefactos locales (el contenedor instala y construye de cero)
+node_modules
+dist
+.pnpm-store
+
+# Git y entorno
+.git
+.gitignore
+.env
+.env.*
+
+# Tests y cobertura
+coverage
+test-results
+test
+
+# IDE y logs
+.vscode
+.idea
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Docker (no ignorar Dockerfile: lo necesita el demonio de build)
+docker-data
