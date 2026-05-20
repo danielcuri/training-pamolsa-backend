@@ -5,6 +5,17 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+/** Orígenes CORS desde CORS_ORIGIN (.env); varios separados por coma. Si falta, se usa el frontend por defecto. */
+function resolveCorsOrigin(): string | string[] {
+  const raw = process.env.CORS_ORIGIN?.trim();
+  if (!raw) return 'http://localhost:4100';
+  const parts = raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return parts.length === 1 ? parts[0]! : parts;
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const isProd = process.env.NODE_ENV === 'production';
@@ -24,7 +35,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
 
   app.enableCors({
-    origin: 'http://localhost:4100', // origen de tu frontend
+    origin: resolveCorsOrigin(),
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
