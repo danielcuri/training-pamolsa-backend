@@ -5,7 +5,7 @@ import * as bcrypt from 'bcryptjs';
 export class ConfigurationService {
   constructor(private readonly prisma: PrismaService) {}
   async seedUser() {
-    if (process.env.ALLOW_BOOTSTRAP !== 'true') {
+    if (process.env.ALLOW_CONFIGURATION !== 'true') {
       return {
         message: 'Bootstrap deshabilitado',
       };
