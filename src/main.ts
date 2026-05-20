@@ -7,6 +7,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const isProd = process.env.NODE_ENV === 'production';
+  const enableDocs = process.env.ENABLE_SWAGGER !== 'false';
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -28,7 +30,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor(reflector));
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (!isProd && enableDocs) {
     const config = new DocumentBuilder()
       .setTitle('Training Pamolsa API')
       .setDescription(
