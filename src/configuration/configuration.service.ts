@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
+
 @Injectable()
 export class ConfigurationService {
   constructor(private readonly prisma: PrismaService) {}
+
   async seedUser() {
     if (process.env.ALLOW_CONFIGURATION !== 'true') {
       return {
@@ -12,6 +14,7 @@ export class ConfigurationService {
     }
 
     const email = 'admin@test.com';
+    const dni = '12345678';
     const plainPassword = 'micronics';
     const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
@@ -21,6 +24,7 @@ export class ConfigurationService {
       },
       update: {
         name: 'Admin',
+        dni,
         password: hashedPassword,
         role: 'SUPERADMIN',
         status: 'ACTIVE',
@@ -28,6 +32,7 @@ export class ConfigurationService {
       create: {
         name: 'Admin',
         email,
+        dni,
         password: hashedPassword,
         role: 'SUPERADMIN',
         status: 'ACTIVE',
