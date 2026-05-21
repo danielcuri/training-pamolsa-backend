@@ -12,6 +12,7 @@ async function main() {
   await prisma.$connect();
 
   const email = 'admin@test.com';
+  const dni = '12345678';
   const plainPassword = 'micronics';
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
@@ -21,6 +22,7 @@ async function main() {
     },
     update: {
       name: 'Admin Test',
+      dni,
       password: hashedPassword,
       role: 'SUPERADMIN',
       status: 'ACTIVE',
@@ -28,6 +30,7 @@ async function main() {
     create: {
       name: 'Admin Test',
       email,
+      dni,
       password: hashedPassword,
       role: 'SUPERADMIN',
       status: 'ACTIVE',
