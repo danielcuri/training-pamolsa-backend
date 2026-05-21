@@ -10,30 +10,44 @@ export class ConfigurationService {
         message: 'Bootstrap deshabilitado',
       };
     }
-    const adminExists = await this.prisma.user.findFirst({
-      where: { role: 'SUPERADMIN' },
-    });
 
-    if (adminExists) {
-      return {
-        message: 'Ya existe un administrador. Bootstrap bloqueado.',
-      };
-    }
+    const email = 'admin@test.com';
+    const plainPassword = 'micronics';
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
-    const hashedPassword = await bcrypt.hash('Admin1234!', 10);
-
-    const user = await this.prisma.user.create({
-      data: {
+    const user = await this.prisma.user.upsert({
+      where: {
+        email,
+      },
+      update: {
         name: 'Admin',
-        email: 'admin@test.com',
         password: hashedPassword,
         role: 'SUPERADMIN',
         status: 'ACTIVE',
       },
+      create: {
+        name: 'Admin',
+        email,
+        password: hashedPassword,
+        role: 'SUPERADMIN',
+        status: 'ACTIVE',
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        dni: true,
+        role: true,
+        status: true,
+        projectId: true,
+        areaId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     return {
-      message: 'Administrador creado correctamente',
+      message: 'Administrador creado/actualizado correctamente',
       user,
     };
   }
