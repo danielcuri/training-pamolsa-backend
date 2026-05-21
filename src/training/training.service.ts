@@ -20,7 +20,7 @@ import {
   buildPrismaQueryParams,
   buildWhere,
 } from 'src/common/helpers';
-
+import { AppTrainingIdentityDto } from './dto/app-training-identity.dto';
 @Injectable()
 export class TrainingService {
   constructor(private readonly prisma: PrismaService) { }
@@ -745,6 +745,117 @@ export class TrainingService {
     });
 
     return buildPaginatedResponse(rows, total, dto);
+  }
+  async findMatrixForApp(trainingId: string, dto: AppTrainingIdentityDto) {
+    const appUser = await this.resolveAppUser(dto);
+
+    await this.validateAppUserCanAccessTraining(trainingId, appUser);
+
+    return this.findMatrix(trainingId);
+  }
+
+  private async resolveAppUser(dto: AppTrainingIdentityDto) {
+    const document = dto.document?.trim();
+    const email = dto.email?.trim();
+
+    if (!document && !email) {
+      throw new BadRequestException(
+        'Debe enviar documento o email para identificar al usuario',
+      );
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        deletedAt: null,
+        status: RecordStatus.ACTIVE,
+        ...(document && { dni: document }),
+        ...(email && { email }),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        dni: true,
+        role: true,
+        status: true,
+        projectId: true,
+        areaId: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        'Usuario no encontrado o no homologado en Training',
+      );
+    }
+
+    if (user.role === Role.COLLABORATOR) {
+      throw new ForbiddenException(
+        'No tienes permisos para visualizar esta matriz de entrenamiento',
+      );
+    }
+
+    if (!user.projectId || !user.areaId) {
+      throw new BadRequestException(
+        'El usuario debe tener un proyecto y área asignados',
+      );
+    }
+
+    return user;
+  }
+
+  private async validateAppUserCanAccessTraining(
+    trainingId: string,
+    appUser: {
+      id: string;
+      role: Role;
+      projectId: string | null;
+      areaId: string | null;
+    },
+  ) {
+    const training = await this.prisma.training.findFirst({
+      where: {
+        id: trainingId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        user: {
+          select: {
+            id: true,
+            role: true,
+            status: true,
+            projectId: true,
+            areaId: true,
+          },
+        },
+        template: {
+          select: {
+            id: true,
+            projectId: true,
+            areaId: true,
+          },
+        },
+      },
+    });
+
+    if (!training) {
+      throw new NotFoundException('Capacitación no encontrada');
+    }
+
+    const sameUserArea =
+      training.user.projectId === appUser.projectId &&
+      training.user.areaId === appUser.areaId;
+
+    const sameTemplateArea =
+      training.template.projectId === appUser.projectId &&
+      training.template.areaId === appUser.areaId;
+
+    if (!sameUserArea || !sameTemplateArea) {
+      throw new ForbiddenException(
+        'No tienes permisos para visualizar esta matriz de entrenamiento',
+      );
+    }
   }
 }
 

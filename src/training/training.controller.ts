@@ -28,7 +28,8 @@ import { UpdateTrainingDto } from './dto/update-training.dto';
 import { ListTrainingsDto } from './dto/list-trainings.dto';
 import { TrainingEntity } from './entities/training.entity';
 import { CreatePeriodProgressDto } from './dto/create-period-progress.dto';
-
+import { Public } from '../auth/decorators/public.decorator';
+import { AppTrainingIdentityDto } from './dto/app-training-identity.dto';
 @ApiTags('training')
 @ApiBearerAuth('JWT-auth')
 @Controller('training')
@@ -110,6 +111,35 @@ export class TrainingController {
   })
   findEvaluableTrainings(@Req() req: any, @Query() dto: ListTrainingsDto) {
     return this.trainingService.findEvaluableTrainings(req.user.id, dto);
+  }
+
+  @Public()
+  @Post('app/:id/matrix')
+  @ResponseMessage('Matriz de entrenamiento para app obtenida correctamente')
+  @ApiOperation({
+    summary: 'Obtener matriz de entrenamiento para app',
+    description:
+      'Devuelve la matriz de entrenamiento para app validando al usuario mediante documento y email enviados en el payload.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'ID de la capacitación',
+    format: 'uuid',
+  })
+  @ApiOkResponse({
+    description: 'Matriz de entrenamiento para app obtenida correctamente',
+  })
+  @ApiBadRequestResponse({
+    description: 'Debe enviar documento o email, o el usuario no tiene proyecto/área asignados.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Usuario o capacitación no encontrada',
+  })
+  findMatrixForApp(
+    @Param('id') id: string,
+    @Body() dto: AppTrainingIdentityDto,
+  ) {
+    return this.trainingService.findMatrixForApp(id, dto);
   }
 
   @Get(':id/matrix')
