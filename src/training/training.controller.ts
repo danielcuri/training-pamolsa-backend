@@ -135,6 +135,30 @@ export class TrainingController {
   @ApiNotFoundResponse({
     description: 'Usuario o capacitación no encontrada',
   })
+  @Public()
+  @Post('app/evaluable')
+  @ResponseMessage('Entrenamientos evaluables para app obtenidos correctamente')
+  @ApiOperation({
+    summary: 'Listar entrenamientos evaluables para app',
+    description:
+      'Devuelve las cabeceras de entrenamientos que el usuario puede evaluar, validando documento y email enviados en el payload.',
+  })
+  @ApiOkResponse({
+    description: 'Listado de entrenamientos evaluables para app',
+  })
+  @ApiBadRequestResponse({
+    description: 'Debe enviar documento o email, o el usuario no tiene proyecto/área asignados.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Usuario no encontrado o no homologado en Training.',
+  })
+  findEvaluableTrainingsForApp(
+    @Body() identity: AppTrainingIdentityDto,
+    @Query() dto: ListTrainingsDto,
+  ) {
+    return this.trainingService.findEvaluableTrainingsForApp(identity, dto);
+  }
+
   findMatrixForApp(
     @Param('id') id: string,
     @Body() dto: AppTrainingIdentityDto,
