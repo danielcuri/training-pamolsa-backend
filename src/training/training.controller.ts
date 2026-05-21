@@ -135,6 +135,13 @@ export class TrainingController {
   @ApiNotFoundResponse({
     description: 'Usuario o capacitación no encontrada',
   })
+  findMatrixForApp(
+    @Param('id') id: string,
+    @Body() dto: AppTrainingIdentityDto,
+  ) {
+    return this.trainingService.findMatrixForApp(id, dto);
+  }
+
   @Public()
   @Post('app/evaluable')
   @ResponseMessage('Entrenamientos evaluables para app obtenidos correctamente')
@@ -157,13 +164,6 @@ export class TrainingController {
     @Query() dto: ListTrainingsDto,
   ) {
     return this.trainingService.findEvaluableTrainingsForApp(identity, dto);
-  }
-
-  findMatrixForApp(
-    @Param('id') id: string,
-    @Body() dto: AppTrainingIdentityDto,
-  ) {
-    return this.trainingService.findMatrixForApp(id, dto);
   }
 
   @Get(':id/matrix')
@@ -222,4 +222,3 @@ export class TrainingController {
     return this.trainingService.remove(id);
   }
 }
-
