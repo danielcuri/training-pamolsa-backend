@@ -40,6 +40,22 @@ export class ListTrainingsDto extends PaginationDto {
   @IsEnum(TrainingResult)
   result?: TrainingResult;
 
+  @ApiPropertyOptional({
+    description: 'Filtra por ID de proyecto.',
+    format: 'uuid',
+  })
+  @IsOptional()
+  @IsUUID()
+  projectId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filtra por ID de área.',
+    format: 'uuid',
+  })
+  @IsOptional()
+  @IsUUID()
+  areaId?: string;
+
   override get filterWhitelist(): string[] {
     return TrainingEntity.FILTERABLE_FIELDS as string[];
   }
