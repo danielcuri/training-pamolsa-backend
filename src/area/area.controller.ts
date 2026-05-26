@@ -12,7 +12,8 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AreaService } from './area.service';
 import { CreateAreaDto } from './dto/create-area.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
-
+import { Public } from '../auth/decorators/public.decorator';
+import { AppTrainingIdentityDto } from '../training/dto/app-training-identity.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../../generated/prisma/client';
 
@@ -23,7 +24,7 @@ import { ListAreasDto } from './dto/list-areas.dto';
 @ApiBearerAuth('JWT-auth')
 @Controller('area')
 export class AreaController {
-  constructor(private readonly areaService: AreaService) {}
+  constructor(private readonly areaService: AreaService) { }
 
   @Post()
   @Roles(Role.ADMIN, Role.SUPERADMIN)
@@ -37,6 +38,16 @@ export class AreaController {
   @ResponseMessage('Areas obtenidos correctamente')
   findAll(@Query() dto: ListAreasDto) {
     return this.areaService.findAll(dto);
+  }
+
+  @Public()
+  @Post('app/options')
+  @ResponseMessage('Opciones de áreas para app obtenidas correctamente')
+  findOptionsForApp(
+    @Body() identity: AppTrainingIdentityDto,
+    @Query('projectId') projectId?: string,
+  ) {
+    return this.areaService.findOptionsForApp(identity, projectId);
   }
 
   @Get(':id')
