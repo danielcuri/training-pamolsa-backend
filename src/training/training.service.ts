@@ -727,6 +727,21 @@ export class TrainingService {
     },
     dto: ListTrainingsDto,
   ) {
+    const projectId = dto.projectId ?? loggedUser.projectId;
+    const areaId = dto.areaId ?? loggedUser.areaId;
+
+    if (dto.projectId && dto.projectId !== loggedUser.projectId) {
+      throw new ForbiddenException(
+        'No tienes permisos para consultar entrenamientos de otro proyecto',
+      );
+    }
+
+    if (dto.areaId && dto.areaId !== loggedUser.areaId) {
+      throw new ForbiddenException(
+        'No tienes permisos para consultar entrenamientos de otra área',
+      );
+    }
+
     const where = {
       deletedAt: null,
 
@@ -742,14 +757,14 @@ export class TrainingService {
         deletedAt: null,
         status: RecordStatus.ACTIVE,
         role: Role.COLLABORATOR,
-        projectId: loggedUser.projectId,
-        areaId: loggedUser.areaId,
+        projectId,
+        areaId,
       },
 
       template: {
         deletedAt: null,
-        projectId: loggedUser.projectId,
-        areaId: loggedUser.areaId,
+        projectId,
+        areaId,
       },
     };
 
