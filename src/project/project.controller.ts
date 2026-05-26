@@ -16,12 +16,13 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../../generated/prisma/client';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListProjectsDto } from './dto/list-projects.dto';
-
+import { Public } from '../auth/decorators/public.decorator';
+import { AppTrainingIdentityDto } from '../training/dto/app-training-identity.dto';
 @ApiTags('project')
 @ApiBearerAuth('JWT-auth')
 @Controller('project')
 export class ProjectController {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(private readonly projectService: ProjectService) { }
 
   @Post()
   @Roles(Role.ADMIN, Role.SUPERADMIN)
@@ -35,6 +36,13 @@ export class ProjectController {
   @ResponseMessage('Proyectos obtenidos correctamente')
   findAll(@Query() params: ListProjectsDto) {
     return this.projectService.findAll(params);
+  }
+
+  @Public()
+  @Post('app/options')
+  @ResponseMessage('Opciones de proyectos para app obtenidas correctamente')
+  findOptionsForApp(@Body() identity: AppTrainingIdentityDto) {
+    return this.projectService.findOptionsForApp(identity);
   }
 
   @Get(':id')
