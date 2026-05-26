@@ -30,6 +30,7 @@ import { TrainingEntity } from './entities/training.entity';
 import { CreatePeriodProgressDto } from './dto/create-period-progress.dto';
 import { Public } from '../auth/decorators/public.decorator';
 import { AppTrainingIdentityDto } from './dto/app-training-identity.dto';
+import { AppCreatePeriodProgressDto } from './dto/app-create-period-progress.dto';
 @ApiTags('training')
 @ApiBearerAuth('JWT-auth')
 @Controller('training')
@@ -98,6 +99,36 @@ export class TrainingController {
     return this.trainingService.createPeriodProgress(periodId, dto);
   }
 
+    @Public()
+  @Post('app/periods/:periodId/progress')
+  @ResponseMessage('Progreso del periodo registrado correctamente desde app')
+  @ApiOperation({
+    summary: 'Registrar progreso grupal de un periodo desde app',
+    description:
+      'Registra en grupo los puntajes de varias operaciones dentro de un periodo, validando al usuario mediante documento y email enviados en el payload.',
+  })
+  @ApiParam({
+    name: 'periodId',
+    description: 'ID del periodo de capacitación',
+    format: 'uuid',
+  })
+  @ApiCreatedResponse({
+    description: 'Progreso del periodo registrado correctamente desde app',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Debe enviar documento o email, o los datos enviados son inválidos.',
+  })
+  @ApiNotFoundResponse({
+    description: 'Usuario o periodo de capacitación no encontrado',
+  })
+  createPeriodProgressForApp(
+    @Param('periodId') periodId: string,
+    @Body() dto: AppCreatePeriodProgressDto,
+  ) {
+    return this.trainingService.createPeriodProgressForApp(periodId, dto);
+  }
+  
   @Get('evaluable')
   @Roles(Role.ADMIN, Role.SUPERADMIN, Role.SUPERVISOR)
   @ResponseMessage('Entrenamientos evaluables obtenidos correctamente')

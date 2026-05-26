@@ -21,6 +21,7 @@ import {
   buildWhere,
 } from 'src/common/helpers';
 import { AppTrainingIdentityDto } from './dto/app-training-identity.dto';
+import { AppCreatePeriodProgressDto } from './dto/app-create-period-progress.dto';
 @Injectable()
 export class TrainingService {
   constructor(private readonly prisma: PrismaService) { }
@@ -545,6 +546,25 @@ export class TrainingService {
 
     return this.findMatrix(period.trainingId);
   }
+  async createPeriodProgressForApp(
+    periodId: string,
+    dto: AppCreatePeriodProgressDto,
+  ) {
+    const appUser = await this.resolveAppUser(dto);
+
+    await this.validateAppUserCanAccessPeriod(periodId, appUser);
+
+    const progressDto: CreatePeriodProgressDto = {
+      evaluationDate: dto.evaluationDate,
+      evaluatorId: appUser.id,
+      validationNotes: dto.validationNotes,
+      reinforcementNotes: dto.reinforcementNotes,
+      scores: dto.scores,
+    };
+
+    return this.createPeriodProgress(periodId, progressDto);
+  }
+
   async findEvaluableTrainings(authUserId: string, dto: ListTrainingsDto) {
     const loggedUser = await this.prisma.user.findFirst({
       where: {
@@ -703,6 +723,64 @@ export class TrainingService {
     if (!sameUserArea || !sameTemplateArea) {
       throw new ForbiddenException(
         'No tienes permisos para visualizar esta matriz de entrenamiento',
+      );
+    }
+  }
+  private async validateAppUserCanAccessPeriod(
+    periodId: string,
+    appUser: {
+      id: string;
+      role: Role;
+      projectId: string | null;
+      areaId: string | null;
+    },
+  ) {
+    const period = await this.prisma.trainingPeriod.findFirst({
+      where: {
+        id: periodId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        training: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                id: true,
+                role: true,
+                status: true,
+                projectId: true,
+                areaId: true,
+              },
+            },
+            template: {
+              select: {
+                id: true,
+                projectId: true,
+                areaId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!period) {
+      throw new NotFoundException('Periodo de capacitación no encontrado');
+    }
+
+    const sameUserArea =
+      period.training.user.projectId === appUser.projectId &&
+      period.training.user.areaId === appUser.areaId;
+
+    const sameTemplateArea =
+      period.training.template.projectId === appUser.projectId &&
+      period.training.template.areaId === appUser.areaId;
+
+    if (!sameUserArea || !sameTemplateArea) {
+      throw new ForbiddenException(
+        'No tienes permisos para registrar progreso en este periodo',
       );
     }
   }
