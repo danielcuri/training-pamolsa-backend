@@ -1,14 +1,9 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAreaDto } from './dto/create-area.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
 
 import { PrismaService } from '../prisma/prisma.service';
-import { RecordStatus, Role } from '../../generated/prisma/client';
+import { RecordStatus } from '../../generated/prisma/client';
 import { ListAreasDto } from './dto/list-areas.dto';
 import { AreaEntity } from './entities/area.entity';
 import {
@@ -16,7 +11,6 @@ import {
   buildPrismaQueryParams,
   buildWhere,
 } from 'src/common/helpers';
-import { AppTrainingIdentityDto } from '../training/dto/app-training-identity.dto';
 @Injectable()
 export class AreaService {
   constructor(private readonly prisma: PrismaService) { }
@@ -82,25 +76,16 @@ export class AreaService {
       data: { status: RecordStatus.INACTIVE },
     });
   }
-  async findOptionsForApp(dto: AppTrainingIdentityDto, projectId?: string) {
-    const appUser = await this.resolveAppUser(dto);
-
-    const selectedProjectId = projectId ?? appUser.projectId;
-
-    if (projectId && projectId !== appUser.projectId) {
-      throw new ForbiddenException(
-        'No tienes permisos para consultar áreas de otro proyecto',
-      );
-    }
-
-    const area = await this.prisma.area.findFirst({
+  async findOptionsForApp(projectId?: string) {
+    return this.prisma.area.findMany({
       where: {
-        id: appUser.areaId,
         deletedAt: null,
         status: RecordStatus.ACTIVE,
-        project: {
-          id: selectedProjectId,
-        },
+        ...(projectId && {
+          project: {
+            id: projectId,
+          },
+        }),
       },
       select: {
         id: true,
@@ -114,63 +99,9 @@ export class AreaService {
           },
         },
       },
-    });
-
-    if (!area) {
-      throw new NotFoundException('Área asignada no encontrada');
-    }
-
-    return [area];
-  }
-
-  private async resolveAppUser(dto: AppTrainingIdentityDto) {
-    const document = dto.document?.trim();
-    const email = dto.email?.trim();
-
-    if (!document && !email) {
-      throw new BadRequestException(
-        'Debe enviar documento o email para identificar al usuario',
-      );
-    }
-
-    const user = await this.prisma.user.findFirst({
-      where: {
-        deletedAt: null,
-        status: RecordStatus.ACTIVE,
-        ...(document && { dni: document }),
-        ...(email && { email }),
-      },
-      select: {
-        id: true,
-        role: true,
-        projectId: true,
-        areaId: true,
+      orderBy: {
+        name: 'asc',
       },
     });
-
-    if (!user) {
-      throw new NotFoundException(
-        'Usuario no encontrado o no homologado en Training',
-      );
-    }
-
-    if (user.role === Role.COLLABORATOR) {
-      throw new ForbiddenException(
-        'No tienes permisos para visualizar opciones de áreas',
-      );
-    }
-
-    if (!user.projectId || !user.areaId) {
-      throw new BadRequestException(
-        'El usuario debe tener un proyecto y área asignados',
-      );
-    }
-
-    return {
-      id: user.id,
-      role: user.role,
-      projectId: user.projectId,
-      areaId: user.areaId,
-    };
   }
 }

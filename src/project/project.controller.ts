@@ -17,7 +17,6 @@ import { Role } from '../../generated/prisma/client';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
 import { ListProjectsDto } from './dto/list-projects.dto';
 import { Public } from '../auth/decorators/public.decorator';
-import { AppTrainingIdentityDto } from '../training/dto/app-training-identity.dto';
 @ApiTags('project')
 @ApiBearerAuth('JWT-auth')
 @Controller('project')
@@ -39,12 +38,12 @@ export class ProjectController {
   }
 
   @Public()
-  @Post('app/options')
+  @Get('app/options')
   @ResponseMessage('Opciones de proyectos para app obtenidas correctamente')
-  findOptionsForApp(@Body() identity: AppTrainingIdentityDto) {
-    return this.projectService.findOptionsForApp(identity);
+  findOptionsForApp() {
+    return this.projectService.findOptionsForApp();
   }
-
+  
   @Get(':id')
   @Roles(Role.ADMIN, Role.SUPERADMIN)
   @ResponseMessage('Proyecto obtenido correctamente')

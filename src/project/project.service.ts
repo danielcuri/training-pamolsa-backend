@@ -1,14 +1,8 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { RecordStatus, Role } from '../../generated/prisma/client';
-
+import { RecordStatus } from '../../generated/prisma/client';
 import { ListProjectsDto } from './dto/list-projects.dto';
 import {
   buildPrismaQueryParams,
@@ -16,7 +10,6 @@ import {
   buildWhere,
 } from 'src/common/helpers';
 import { ProjectEntity } from './entities/project.entity';
-import { AppTrainingIdentityDto } from '../training/dto/app-training-identity.dto';
 @Injectable()
 export class ProjectService {
   constructor(private readonly prisma: PrismaService) { }
@@ -77,12 +70,9 @@ export class ProjectService {
       data: { status: RecordStatus.INACTIVE },
     });
   }
-  async findOptionsForApp(dto: AppTrainingIdentityDto) {
-    const appUser = await this.resolveAppUser(dto);
-
-    const project = await this.prisma.project.findFirst({
+  async findOptionsForApp() {
+    return this.prisma.project.findMany({
       where: {
-        id: appUser.projectId,
         deletedAt: null,
         status: RecordStatus.ACTIVE,
       },
@@ -91,63 +81,9 @@ export class ProjectService {
         name: true,
         status: true,
       },
-    });
-
-    if (!project) {
-      throw new NotFoundException('Proyecto asignado no encontrado');
-    }
-
-    return [project];
-  }
-
-  private async resolveAppUser(dto: AppTrainingIdentityDto) {
-    const document = dto.document?.trim();
-    const email = dto.email?.trim();
-
-    if (!document && !email) {
-      throw new BadRequestException(
-        'Debe enviar documento o email para identificar al usuario',
-      );
-    }
-
-    const user = await this.prisma.user.findFirst({
-      where: {
-        deletedAt: null,
-        status: RecordStatus.ACTIVE,
-        ...(document && { dni: document }),
-        ...(email && { email }),
-      },
-      select: {
-        id: true,
-        role: true,
-        projectId: true,
-        areaId: true,
+      orderBy: {
+        name: 'asc',
       },
     });
-
-    if (!user) {
-      throw new NotFoundException(
-        'Usuario no encontrado o no homologado en Training',
-      );
-    }
-
-    if (user.role === Role.COLLABORATOR) {
-      throw new ForbiddenException(
-        'No tienes permisos para visualizar opciones de proyectos',
-      );
-    }
-
-    if (!user.projectId || !user.areaId) {
-      throw new BadRequestException(
-        'El usuario debe tener un proyecto y área asignados',
-      );
-    }
-
-    return {
-      id: user.id,
-      role: user.role,
-      projectId: user.projectId,
-      areaId: user.areaId,
-    };
   }
 }
