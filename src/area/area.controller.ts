@@ -13,7 +13,6 @@ import { AreaService } from './area.service';
 import { CreateAreaDto } from './dto/create-area.dto';
 import { UpdateAreaDto } from './dto/update-area.dto';
 import { Public } from '../auth/decorators/public.decorator';
-import { AppTrainingIdentityDto } from '../training/dto/app-training-identity.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '../../generated/prisma/client';
 
@@ -41,15 +40,12 @@ export class AreaController {
   }
 
   @Public()
-  @Post('app/options')
+  @Get('app/options')
   @ResponseMessage('Opciones de áreas para app obtenidas correctamente')
-  findOptionsForApp(
-    @Body() identity: AppTrainingIdentityDto,
-    @Query('projectId') projectId?: string,
-  ) {
-    return this.areaService.findOptionsForApp(identity, projectId);
+  findOptionsForApp(@Query('projectId') projectId?: string) {
+    return this.areaService.findOptionsForApp(projectId);
   }
-
+  
   @Get(':id')
   @Roles(Role.ADMIN, Role.SUPERADMIN)
   @ResponseMessage('Area obtenido correctamente')
